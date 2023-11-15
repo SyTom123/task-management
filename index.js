@@ -5,11 +5,14 @@ const database = require("./config/database");
 const mongoose = require('mongoose');
 const routesApiVer1 = require("./api/v1/routes/index.route");
 const cors = require('cors');
+const cookieParse = require("cookie-parser");
 const app = express();
 
 
 //connect database
 database.connect();
+
+app.use(cookieParse())
 
 // parse application/json
 app.use(bodyParser.json());
