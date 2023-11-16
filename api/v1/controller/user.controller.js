@@ -1,5 +1,9 @@
 const md5 = require('md5');
 const User = require("../models/user.model");
+const gererateHelper = require("../../../helpers/generate");
+const sendMailHelper = require("../../../helpers/sendMail");
+const forgotPassword = require("../../../api/v1/models/forgot-password.modle");
+const ForgotPassword = require('../../../api/v1/models/forgot-password.modle');
 //[POST] api/v1/users/register
 module.exports.register = async(req, res) => {
     try {
@@ -76,5 +80,42 @@ module.exports.login = async(req, res) => {
             message: "Lỗi"
         });
     }
+}
+// [POST] /api/v1/users/password/forgot
+module.exports.forgotPassword = async (req, res) => {
+    const email = req.body.email;
+    const user = User.find({
+        email: email,
+        deleted: false
+    });
+
+    if(!user) {
+        res.json({
+            code: 400,
+            message: "Email không tồn tại"
+        })
+    }
+    const otp= gererateHelper.generateRandomNumber(8);
+    const timeExpire = 5;
+    const objectFogotPassword = {
+        email: email,
+        otp: otp,
+        exprireAt: Date.now() + timeExpire* 60
+    };
+
+    const forgotPassword = new ForgotPassword(objectFogotPassword);
+    await forgotPassword.save();
+
+    //Gửi OTP qua email user
+    const subject = "Mã OTP xác minh lấy lại mật khẩu";
+    const html = `Mã OTP để lấy lại mật khẩu của bạn là <b>${otp}</b>. Sử dụng trong ${timeExpire} phút.
+    Vui lòng không chia sẻ mã OTP này với bất kỳ ai`;
+
+    sendMailHelper.sendMail(email, subject, html);
+    res.json({
+        code: 200,
+        message: "Đã gửi mã OTP qua email"
+    })
+     
 }
 
