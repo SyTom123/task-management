@@ -4,6 +4,7 @@ const gererateHelper = require("../../../helpers/generate");
 const sendMailHelper = require("../../../helpers/sendMail");
 const forgotPassword = require("../../../api/v1/models/forgot-password.modle");
 const ForgotPassword = require('../../../api/v1/models/forgot-password.modle');
+
 //[POST] api/v1/users/register
 module.exports.register = async(req, res) => {
     try {
@@ -22,7 +23,8 @@ module.exports.register = async(req, res) => {
             const user = new User ({
                 fullName: req.body.fullName,
                 email: req.body.email,
-                password: req.body.password
+                password: req.body.password,
+                token: gererateHelper.generateRandomString(30)
             });
             user.save();
             const token = user.token;
@@ -100,7 +102,7 @@ module.exports.forgotPassword = async (req, res) => {
     const objectFogotPassword = {
         email: email,
         otp: otp,
-        exprireAt: Date.now() + timeExpire* 60
+        exprireAt: Date.now() + timeExpire* 60*1000
     };
 
     const forgotPassword = new ForgotPassword(objectFogotPassword);
